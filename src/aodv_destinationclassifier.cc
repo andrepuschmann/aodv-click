@@ -51,6 +51,7 @@ void AODVDestinationClassifier::push (int port, Packet * packet){
 		if (nexthop){
 			writable->set_dst_ip_anno(*nexthop);
 			writable->ip_header()->ip_dst = nexthop->in_addr();
+			delete nexthop;
 			output(1).push(writable);
 		} else {
 			writable->set_dst_ip_anno(rrep->originator); // set annotation for waitinfordiscovery
