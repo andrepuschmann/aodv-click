@@ -60,7 +60,11 @@ void AODVTrackNeighbours::expire(IPAddress* ip)
 		Vector<uint32_t> seqNrs;
 		Vector<IPAddress> ips;
 		uint32_t* seqNr = neighbour_table->getSequenceNumber(*ip);
-		seqNrs.push_back(*seqNr);
+		if(seqNr)
+		{
+			seqNrs.push_back(*seqNr);
+			delete seqNr;
+		}
 		ips.push_back(*ip); // add expired IP too, that's the main source for the RERR
 
 		for (Vector<IPAddress>::iterator iter = precursors->begin();

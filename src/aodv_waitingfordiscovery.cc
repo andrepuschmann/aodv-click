@@ -101,9 +101,14 @@ void AODVWaitingForDiscovery::newKnownDestination(const IPAddress & destination,
 								
 				// RFC 6.7 last paragraph: 
 				// destination contains next hop (towards destination)
-				if(!neighbour_table->getSequenceNumber(rrep->destination)){
+				uint32_t *seqNr = neighbour_table->getSequenceNumber(rrep->destination);
+				if(!seqNr){
 					// the information might be outdated, update it
 					neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination), ntohl(rrep->destinationseqnr), rrep->hopcount, IPAddress(ipheader->ip_src), ntohl(rrep->lifetime));
+				}
+				else
+				{
+					delete seqNr;
 				}
 				neighbour_table->addPrecursor(rrep->destination,nexthop); 
 				// nexthop towards destination contains next hop towards source

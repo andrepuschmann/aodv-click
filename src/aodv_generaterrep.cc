@@ -115,10 +115,10 @@ void AODVGenerateRREP::push (int port, Packet * rreq){
 		IPAddress* nexthop = neighbour_table->nexthop(IPAddress(rreq_header->destination));
 		assert(nexthop);
 		setrrepheaders->addRREP(grrep,nexthop);
-		
+		//delete nexthop;
 		output(0).push(grrep);
 	}
-	
+	//delete nexthop;
 	rreq->kill(); // release old data
 }
 CLICK_ENDDECLS

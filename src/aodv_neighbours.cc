@@ -250,7 +250,9 @@ Vector<IPAddress>* AODVNeighbours::getPrecursors(const IPAddress & ip) const{
 	Vector<IPAddress>* res = new Vector<IPAddress>;
 	for(PrecursorMap::iterator iter = pair->value.precursorlist.begin(); iter != pair->value.precursorlist.end(); ++iter){
 		// some results may not be valid any more, instead of deleting those on expiry don't return them
-		if (getSequenceNumber(iter.key())) res->push_back(iter.key());
+		uint32_t *seqNr =  getSequenceNumber(iter.key());
+		if (seqNr) res->push_back(iter.key());
+		delete seqNr;
 	}
 	return res;
 }
