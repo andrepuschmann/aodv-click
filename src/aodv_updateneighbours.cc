@@ -56,6 +56,7 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 			if (ipheader->ip_ttl == 1){ //HELLO
 				neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination),ntohl(rrep->destinationseqnr),rrep->hopcount, IPAddress(ipheader->ip_src),AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
 			} else { // RREP
+				click_chatter("%s",neighbour_table->printRT("RREP").c_str());
 				// the information is only useful if I am not the destination (I might hear this packets due to routing changes)
 				if (rrep->destination != neighbour_table->getMyIP()){ 
 					neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination), ntohl(rrep->destinationseqnr), rrep->hopcount, IPAddress(ipheader->ip_src), ntohl(rrep->lifetime));
@@ -67,7 +68,7 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 		case AODV_RREQ_MESSAGE: //RREQ
 			//aodv_rreq_header * header = (aodv_rreq_header*) (packet->data() + aodv_headeroffset);
 			//click_chatter("AODV rreq packet received from %s with rreqid %u", IPAddress(header->originator).s().c_str(), ntohl(header->rreqid));
-			
+			click_chatter("%s",neighbour_table->printRT("RREQ").c_str());
 			// RFC 6.5: create or update route to previous hop ...
 			neighbour_table->updateRoutetableEntry(ipheader->ip_src,1, ipheader->ip_src);
 			

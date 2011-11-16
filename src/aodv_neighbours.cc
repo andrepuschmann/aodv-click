@@ -8,6 +8,7 @@
 #include <click/config.h>
 #include <click/confparse.hh>
 #include <click/error.hh>
+#include <click/straccum.hh>
 
 #include "aodv_neighbours.hh"
 #include "click_aodv.hh"
@@ -44,6 +45,13 @@ void AODVNeighbours::expire(const IPAddress & ip, TimerData * timerdata){
 	// pass timerdata too to clean up memory after timer expires completely
 	NeighbourMap::Pair* pair = neighbours.find_pair(ip);
 	assert(pair);
+	click_chatter("[%s] %s via %s %d DSN=%d %s, valid, LT=%d",
+			pair->value.valid?"E":"D",
+			pair->key.s().c_str(),
+			IPAddress(pair->value.nexthop).s().c_str(), pair->value.hopcount,
+			pair->value.destinationSequenceNumber,
+			pair->value.validDestinationSequenceNumber?"valid":"not valid",
+			(pair->value.expiry->expiry()-Timestamp::now()).msec());
 	if(pair->value.valid){
 		pair->value.valid = false;
 		pair->value.expiry->schedule_after_msec(AODV_DELETE_PERIOD);
@@ -70,6 +78,10 @@ void AODVNeighbours::editRoutetableEntry(NeighbourMap::Pair* pair, bool validDes
 	pair->value.hopcount = hopcount;
 	pair->value.nexthop = nexthop;
 	pair->value.expiry->schedule_after_msec(calculateLifetime(lifetime));
+	click_chatter("[U] %s via %s %d DSN=%d %s, valid, LT=%d",pair->key.s().c_str(),nexthop.s().c_str(), hopcount,
+				destinationSequenceNumber,
+				validDestinationSequenceNumber?"valid":"not valid",
+				(pair->value.expiry->expiry()-Timestamp::now()).msec());
 	assert(watcher);
 	watcher->newKnownDestination(pair->key,nexthop);
 }
@@ -93,6 +105,10 @@ void AODVNeighbours::insertRoutetableEntry(bool validDestinationSequenceNumber, 
 	data.nexthop = nexthop;
 	assert(!neighbours.find_pair(ip));
 	neighbours.insert(ip,data);
+	click_chatter("[I] %s via %s %d DSN=%d %s, valid, LT=%d",ip.s().c_str(),nexthop.s().c_str(), hopcount,
+			data.destinationSequenceNumber,
+			validDestinationSequenceNumber?"valid":"not valid",
+			(data.expiry->expiry()-Timestamp::now()).msec());
 	assert(watcher);
 	watcher->newKnownDestination(ip,nexthop);
 }
@@ -116,7 +132,9 @@ void AODVNeighbours::updateRoutetableEntry(const IPAddress & ip, uint32_t sequen
 	
 	// RFC 6.2: "The route is only updated if the new sequence number is either:..."
 	if (NeighbourMap::Pair* pair = neighbours.find_pair(ip)){
-		if (!pair->value.valid || largerSequenceNumber(pair->value.destinationSequenceNumber,sequenceNumber) || (pair->value.destinationSequenceNumber == sequenceNumber && hopcount < pair->value.hopcount)) {
+		if (!pair->value.valid ||
+			largerSequenceNumber(pair->value.destinationSequenceNumber,sequenceNumber) ||
+			(pair->value.destinationSequenceNumber == sequenceNumber && hopcount < pair->value.hopcount)) {
 			editRoutetableEntry(pair,true,sequenceNumber,hopcount,nexthop,lifetime);
 		}
 	} else {
@@ -142,6 +160,22 @@ void AODVNeighbours::addLifeTime(const IPAddress & destination, uint32_t ms){
 	Timestamp newer = calculateTimeval(ms);
 	const Timestamp & old = pair->value.expiry->expiry();
 	if (old < newer) pair->value.expiry->schedule_at(newer);
+}
+
+String AODVNeighbours::printRT(String caption)
+{
+	StringAccum acc;
+	acc << caption << "\n";
+	for (NeighbourMap::iterator i = neighbours.begin(); i!=neighbours.end();++i)
+		{
+			acc << "   ["<<(i.value().valid?"V ":"I ")
+				<<i.value().destinationSequenceNumber<<"] "
+			    << IPAddress(i.key()).s()<< " via "
+			    << IPAddress(i.value().nexthop).s() << ", hops "
+			    << i.value().hopcount << ", lifetime "
+			    << (i.value().expiry->expiry() - Timestamp::now()).msec() << "\n";
+		}
+	return acc.take_string();
 }
 
 void AODVNeighbours::updateLifetime(NeighbourMap::Pair* pair){
@@ -226,21 +260,26 @@ uint32_t AODVNeighbours::getLifetime(const IPAddress & ip) const{
 	NeighbourMap::Pair* pair = neighbours.find_pair(ip);
 	assert(pair);
 	const Timestamp & expiry = pair->value.expiry->expiry();
+
 	Timestamp now = Timestamp::now();
-	uint32_t result = (expiry - now).msecval();
-	return (result == 0)?1:result; // avoid returning 0 to avoid confusion: this entry is still valid!
+
+	int32_t result = (expiry - now).msecval();
+	return (result <= 0)?1:result; // avoid returning 0 to avoid confusion: this entry is still valid!
 }
 
 // RFC 6.11
 void AODVNeighbours::processRERR(const IPAddress & ip){
 	NeighbourMap::Pair* pair = neighbours.find_pair(ip);
 	if (!pair) return;
+	click_chatter("Invalidate existing route to %s", ip.s().c_str());
 	// 1.
 	if (pair->value.valid) ++pair->value.destinationSequenceNumber;
 	// 2.
 	pair->value.valid = false;
 	// 3.
 	pair->value.expiry->schedule_after_msec(AODV_DELETE_PERIOD);
+
+
 }
 
 Vector<IPAddress>* AODVNeighbours::getPrecursors(const IPAddress & ip) const{

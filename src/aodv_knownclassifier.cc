@@ -69,16 +69,13 @@ void AODVKnownClassifier::push (int port, Packet * p){
 	bool destinationOnly = rreq->jrgdureserved & (1 << 4);
 	IPAddress* next = neighbour_table->nexthop(rreq->destination);
 	uint32_t * storedSeqNr = neighbour_table->getSequenceNumber(rreq->destination);
-	bool activeRoute = false;
-	if(next)
-	{
-		activeRoute = neighbour_table->getLifetime(rreq->destination)>0;
-	}
-	if (rreq->destination == *myIP || (!destinationOnly && next && activeRoute && (*storedSeqNr == ntohl(rreq->destinationseqnr) || AODVNeighbours::largerSequenceNumber(*storedSeqNr,ntohl(rreq->destinationseqnr))))){
+
+	if (rreq->destination == *myIP ||
+			(!destinationOnly && next && (*storedSeqNr == ntohl(rreq->destinationseqnr) || AODVNeighbours::largerSequenceNumber(*storedSeqNr,ntohl(rreq->destinationseqnr))))){
 		//click_chatter("destination found, replying");
 		
-		if(next) neighbour_table->addPrecursor(*next,rreq->destination); // RFC 6.2
-		
+		//if(next) neighbour_table->addPrecursor(*next,rreq->destination); // RFC 6.2
+		if(next) neighbour_table->addPrecursor(rreq->destination,IPAddress(ipheader->ip_src)); // RFC 6.2
 		output(0).push(packet);
 	} else {
 		// RFC 6.5: "if a node does not generate a RREP...: update to maximum"

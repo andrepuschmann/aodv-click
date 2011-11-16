@@ -70,6 +70,7 @@ void AODVGenerateRREP::push (int port, Packet * rreq){
 		uint32_t * destinationseqnr = neighbour_table->getSequenceNumber(rreq_header->destination);
 		assert(destinationseqnr); // if we don't have a sequence number why are we responding...
 		header->destinationseqnr = htonl(*destinationseqnr);
+
 		header->lifetime = htonl(neighbour_table->getLifetime(rreq_header->destination));
 		header->hopcount = neighbour_table->getHopcount(rreq_header->destination);
 		delete destinationseqnr;
@@ -83,7 +84,7 @@ void AODVGenerateRREP::push (int port, Packet * rreq){
 	const click_ip * ipheader = rreq->ip_header();
 	assert(ipheader);
 	
-	if (!imdestination) neighbour_table->addPrecursor(ipheader->ip_src,rreq_header->originator); // RFC 6.2
+	if (!imdestination) neighbour_table->addPrecursor(rreq_header->destination,ipheader->ip_src); // RFC 6.2
 	
 	IPAddress* nexthop = neighbour_table->nexthop(IPAddress(header->originator));
 	assert(nexthop);

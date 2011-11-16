@@ -62,6 +62,8 @@ class AODVNeighbours : public Element {
 		void processRERR(const IPAddress &);
 		Vector<IPAddress>* getPrecursors(const IPAddress &) const;
 		Vector<IPAddress> getEntriesWithNexthop(const IPAddress &) const;
+
+		String printRT(String caption);
 	private:
 		IPAddress myIP;
 		uint32_t mySequenceNumber;

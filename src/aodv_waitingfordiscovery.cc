@@ -112,7 +112,7 @@ void AODVWaitingForDiscovery::newKnownDestination(const IPAddress & destination,
 				}
 				neighbour_table->addPrecursor(rrep->destination,nexthop); 
 				// nexthop towards destination contains next hop towards source
-				neighbour_table->addPrecursor(nexthop,ipheader->ip_src); 
+				neighbour_table->addPrecursor(nexthop,ipheader->ip_src);
 			}
 			
 			(*iter)->set_dst_ip_anno(nexthop);
