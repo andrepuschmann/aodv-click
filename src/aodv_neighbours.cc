@@ -78,10 +78,8 @@ void AODVNeighbours::editRoutetableEntry(NeighbourMap::Pair* pair, bool validDes
 	pair->value.hopcount = hopcount;
 	pair->value.nexthop = nexthop;
 	pair->value.expiry->schedule_after_msec(calculateLifetime(lifetime));
-	click_chatter("[U] %s via %s %d DSN=%d %s, valid, LT=%d",pair->key.s().c_str(),nexthop.s().c_str(), hopcount,
-				destinationSequenceNumber,
-				validDestinationSequenceNumber?"valid":"not valid",
-				(pair->value.expiry->expiry()-Timestamp::now()).msec());
+
+	click_chatter("%s",printRT("[E] before newKnownDestination").c_str());
 	assert(watcher);
 	watcher->newKnownDestination(pair->key,nexthop);
 }
@@ -132,12 +130,19 @@ void AODVNeighbours::updateRoutetableEntry(const IPAddress & ip, uint32_t sequen
 	
 	// RFC 6.2: "The route is only updated if the new sequence number is either:..."
 	if (NeighbourMap::Pair* pair = neighbours.find_pair(ip)){
-		if (!pair->value.valid ||
-			largerSequenceNumber(pair->value.destinationSequenceNumber,sequenceNumber) ||
-			(pair->value.destinationSequenceNumber == sequenceNumber && hopcount < pair->value.hopcount)) {
+		if (
+				(!pair->value.validDestinationSequenceNumber )||
+				(largerSequenceNumber(sequenceNumber,pair->value.destinationSequenceNumber) && pair->value.validDestinationSequenceNumber) ||
+				(sequenceNumber == pair->value.destinationSequenceNumber && !pair->value.valid) ||
+				(sequenceNumber == pair->value.destinationSequenceNumber && hopcount < pair->value.hopcount)
+			) {
+
+			click_chatter("%s",printRT("[U] before edit").c_str());
+
 			editRoutetableEntry(pair,true,sequenceNumber,hopcount,nexthop,lifetime);
 		}
 	} else {
+		click_chatter("%s",printRT("[U] before insert").c_str());
 		insertRoutetableEntry(true,sequenceNumber,hopcount,nexthop,lifetime,ip);
 	}
 }
@@ -169,7 +174,8 @@ String AODVNeighbours::printRT(String caption)
 	for (NeighbourMap::iterator i = neighbours.begin(); i!=neighbours.end();++i)
 		{
 			acc << "   ["<<(i.value().valid?"V ":"I ")
-				<<i.value().destinationSequenceNumber<<"] "
+				<<i.value().destinationSequenceNumber
+				<<(i.value().validDestinationSequenceNumber?"V ":"I ")<<"] "
 			    << IPAddress(i.key()).s()<< " via "
 			    << IPAddress(i.value().nexthop).s() << ", hops "
 			    << i.value().hopcount << ", lifetime "

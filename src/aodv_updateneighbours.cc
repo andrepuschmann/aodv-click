@@ -49,7 +49,7 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 			assert(rrep->type == 2);
 			
 			//click_chatter("AODV rrep/hello packet received from %s with seqnr %u", IPAddress(rrep->originator).s().c_str(), ntohl(rrep->destinationseqnr));
-		
+			neighbour_table->updateRoutetableEntry(ipheader->ip_src,1, ipheader->ip_src);
 			// increment hopcount according to RFC 6.7
 			++rrep->hopcount;
 			

@@ -59,8 +59,19 @@ void AODVKnownClassifier::push (int port, Packet * p){
 	
 	const click_ip * ipheader = packet->ip_header();
 	
+	click_chatter ("in  RREQ %s -> %s; o: %s; d: %s HC=%d",
+			IPAddress(ipheader->ip_src).s().c_str(),
+			IPAddress(ipheader->ip_dst).s().c_str(),
+			IPAddress(rreq->originator).s().c_str(),
+			IPAddress(rreq->destination).s().c_str(),
+			rreq->hopcount);
+
 	uint32_t newlifetime = (2 * AODV_NET_TRAVERSAL_TIME) - (2 * rreq->hopcount * AODV_NODE_TRAVERSAL_TIME);
 	
+	/***********
+	 * Не должен обновлять номер в случае, если не генерируется RREP!!! (RFC стр. 17)
+	 * Lifetime: (1) (RFC стр. 17)
+	 */
 	neighbour_table->updateRoutetableEntry(rreq->originator, ntohl(rreq->originatorseqnr),rreq->hopcount, ipheader->ip_src, newlifetime);
 	
 	// RFC 6.5: "Whenever a RREQ message is received, ..." be certain, do update again
@@ -71,9 +82,13 @@ void AODVKnownClassifier::push (int port, Packet * p){
 	uint32_t * storedSeqNr = neighbour_table->getSequenceNumber(rreq->destination);
 
 	if (rreq->destination == *myIP ||
-			(!destinationOnly && next && (*storedSeqNr == ntohl(rreq->destinationseqnr) || AODVNeighbours::largerSequenceNumber(*storedSeqNr,ntohl(rreq->destinationseqnr))))){
+			(!destinationOnly && next &&
+			  (*storedSeqNr == ntohl(rreq->destinationseqnr) ||
+			   AODVNeighbours::largerSequenceNumber(*storedSeqNr,ntohl(rreq->destinationseqnr))))){
 		//click_chatter("destination found, replying");
-		
+/*****************
+ * Не отвечать на запросы от тех, через кого сам водит пакеты !!!
+ */
 		//if(next) neighbour_table->addPrecursor(*next,rreq->destination); // RFC 6.2
 		if(next) neighbour_table->addPrecursor(rreq->destination,IPAddress(ipheader->ip_src)); // RFC 6.2
 		output(0).push(packet);
