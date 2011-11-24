@@ -46,7 +46,7 @@ void AODVGenerateRERR::push (int port, Packet * packet){
 		generateRERR(false,ips,seqnrs);
 		
 	} else {
-		click_chatter("%s",neighbour_table->printRT("RERR 6.9 iii: port 1").c_str());
+		click_chatter("%s",neighbour_table->printRT("in  RERR 6.9 iii: port 1").c_str());
 		// 6.9 case iii: receives RERR from a neighbour for one or more active routes
 		aodv_rerr_header * rerr = (aodv_rerr_header*) (packet->data() + aodv_headeroffset);
 		assert(rerr->type == AODV_RERR_MESSAGE);

@@ -40,12 +40,12 @@ void AODVDestinationClassifier::push (int port, Packet * packet){
 	const aodv_rrep_header * rrep = (aodv_rrep_header*) (packet->data() + aodv_headeroffset);
 	const struct click_ip *ipheader = (struct click_ip*)packet->network_header();
 	//click_chatter("rrep for %s from %s received in %s", IPAddress(rrep->originator).s().c_str(), IPAddress(rrep->destination).s().c_str(), myIP->s().c_str());
-	click_chatter ("in  RREP %s -> %s; o: %s; d: %s HC=%d",
+	/*click_chatter ("in  RREP %s -> %s; o: %s; d: %s HC=%d",
 				IPAddress(ipheader->ip_src).s().c_str(),
 				IPAddress(ipheader->ip_dst).s().c_str(),
 				IPAddress(rrep->originator).s().c_str(),
 				IPAddress(rrep->destination).s().c_str(),
-				rrep->hopcount);
+				rrep->hopcount);*/
 	if (rrep->originator == *myIP){
 		output(0).push(packet); // new information for waitingfordiscovery
 	}

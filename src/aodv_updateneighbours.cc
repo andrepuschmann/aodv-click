@@ -9,7 +9,7 @@
 #include <click/confparse.hh>
 #include <click/error.hh>
 #include <clicknet/ip.h>
-
+#include <click/straccum.hh>
 #include "aodv_updateneighbours.hh"
 #include "aodv_packetanalyzer.hh"
 #include "click_aodv.hh"
@@ -56,7 +56,15 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 			if (ipheader->ip_ttl == 1){ //HELLO
 				neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination),ntohl(rrep->destinationseqnr),rrep->hopcount, IPAddress(ipheader->ip_src),AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
 			} else { // RREP
-				click_chatter("%s",neighbour_table->printRT("RREP").c_str());
+				StringAccum acc1;
+							acc1 << "in  RREP " << IPAddress(ipheader->ip_src)
+								<< " -> " << IPAddress(ipheader->ip_dst)
+								<< "; o:" << IPAddress(rrep->originator)
+								<< " d:" << IPAddress(rrep->destination)
+								<< "; HC="<< (int)rrep->hopcount
+								<< "; LT="<< ntohl(rrep->lifetime)
+								<< "; DSN="<< ntohl(rrep->destinationseqnr);
+				click_chatter("%s",neighbour_table->printRT(acc1.take_string()).c_str());
 				// the information is only useful if I am not the destination (I might hear this packets due to routing changes)
 				if (rrep->destination != neighbour_table->getMyIP()){ 
 					neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination), ntohl(rrep->destinationseqnr), rrep->hopcount, IPAddress(ipheader->ip_src), ntohl(rrep->lifetime));
@@ -66,14 +74,22 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 			break;
 			}
 		case AODV_RREQ_MESSAGE: //RREQ
-			//aodv_rreq_header * header = (aodv_rreq_header*) (packet->data() + aodv_headeroffset);
+		{
+			aodv_rreq_header * header = (aodv_rreq_header*) (packet->data() + aodv_headeroffset);
 			//click_chatter("AODV rreq packet received from %s with rreqid %u", IPAddress(header->originator).s().c_str(), ntohl(header->rreqid));
-			click_chatter("%s",neighbour_table->printRT("RREQ").c_str());
+			StringAccum acc;
+			acc << "in  RREQ " << IPAddress(ipheader->ip_src)
+				<< " -> " << IPAddress(ipheader->ip_dst)
+				<< "; o:" << IPAddress(header->originator)<<"("<<ntohl(header->originatorseqnr)<<")"
+				<< " d:" << IPAddress(header->destination)<<"("<<ntohl(header->destinationseqnr)<<")"
+				<< "; HC="<< (int)header->hopcount;
+			click_chatter("%s",neighbour_table->printRT(acc.take_string()).c_str());
 			// RFC 6.5: create or update route to previous hop ...
 			neighbour_table->updateRoutetableEntry(ipheader->ip_src,1, ipheader->ip_src);
 			
 			output(0).push(packet);
 			break;
+		}
 		case AODV_RREP_ACK_MESSAGE:
 			//click_chatter("AODV rrep-ack packet received");
 			//no processing possible

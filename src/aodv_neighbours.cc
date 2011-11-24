@@ -79,7 +79,7 @@ void AODVNeighbours::editRoutetableEntry(NeighbourMap::Pair* pair, bool validDes
 	pair->value.nexthop = nexthop;
 	pair->value.expiry->schedule_after_msec(calculateLifetime(lifetime));
 
-	click_chatter("%s",printRT("[E] before newKnownDestination").c_str());
+	//click_chatter("%s",printRT("[E] before newKnownDestination").c_str());
 	assert(watcher);
 	watcher->newKnownDestination(pair->key,nexthop);
 }
@@ -103,10 +103,10 @@ void AODVNeighbours::insertRoutetableEntry(bool validDestinationSequenceNumber, 
 	data.nexthop = nexthop;
 	assert(!neighbours.find_pair(ip));
 	neighbours.insert(ip,data);
-	click_chatter("[I] %s via %s %d DSN=%d %s, valid, LT=%d",ip.s().c_str(),nexthop.s().c_str(), hopcount,
+	/*click_chatter("[I] %s via %s %d DSN=%d %s, valid, LT=%d",ip.s().c_str(),nexthop.s().c_str(), hopcount,
 			data.destinationSequenceNumber,
 			validDestinationSequenceNumber?"valid":"not valid",
-			(data.expiry->expiry()-Timestamp::now()).msec());
+			(data.expiry->expiry()-Timestamp::now()).msec());*/
 	assert(watcher);
 	watcher->newKnownDestination(ip,nexthop);
 }
@@ -127,7 +127,11 @@ void AODVNeighbours::updateRoutetableEntry(const IPAddress & ip, uint32_t sequen
 {
 	assert(lifetime > 0);
 	assert (ip != myIP);
-	
+	bool prnt = !(ip == nexthop);
+	if(prnt)
+	{
+		click_chatter("%s",printRT("[U] before").c_str());
+	}
 	// RFC 6.2: "The route is only updated if the new sequence number is either:..."
 	if (NeighbourMap::Pair* pair = neighbours.find_pair(ip)){
 		if (
@@ -137,13 +141,17 @@ void AODVNeighbours::updateRoutetableEntry(const IPAddress & ip, uint32_t sequen
 				(sequenceNumber == pair->value.destinationSequenceNumber && hopcount < pair->value.hopcount)
 			) {
 
-			click_chatter("%s",printRT("[U] before edit").c_str());
+
 
 			editRoutetableEntry(pair,true,sequenceNumber,hopcount,nexthop,lifetime);
 		}
 	} else {
-		click_chatter("%s",printRT("[U] before insert").c_str());
 		insertRoutetableEntry(true,sequenceNumber,hopcount,nexthop,lifetime,ip);
+	}
+
+	if(prnt)
+	{
+		click_chatter("%s",printRT("[U] after").c_str());
 	}
 }
 
@@ -184,6 +192,18 @@ String AODVNeighbours::printRT(String caption)
 	return acc.take_string();
 }
 
+void AODVNeighbours::invalidateRoute(const IPAddress & dst)
+{
+	NeighbourMap::Pair* pair = neighbours.find_pair(dst);
+	if(pair)
+	{
+		if(pair->value.valid){
+			pair->value.valid = false;
+			pair->value.expiry->schedule_after_msec(AODV_DELETE_PERIOD);
+		}
+	}
+}
+
 void AODVNeighbours::updateLifetime(NeighbourMap::Pair* pair){
 	Timestamp newer = calculateTimeval(calculateLifetime(-1)); // use existing code
 	const Timestamp & old = pair->value.expiry->expiry();
@@ -204,7 +224,7 @@ void AODVNeighbours::updateRouteLifetime(const IPAddress & from, const IPAddress
 	
 	// it is possible that we don't have information about the previous hop (highly likely)
 	// it is also possible that we don't have information about the next hop (eg. node sends data before transmitting HELLO or RREQ so we don't have its sequence number, filling in a new entry is not feasible)
-	
+	click_chatter("Update Lifetime %s <-> %s",from.s().c_str(), to.s().c_str());
 	assert(to != myIP);
 	if (from != myIP){
 		// update lifetime when using local paths but don't update previous hop then
