@@ -2,6 +2,7 @@
 #define AODVNEIGHBOURS_HH
 #include <click/element.hh>
 #include <click/hashmap.hh>
+#include <click/hashtable.hh>
 #include <click/timer.hh>
 #include "click_aodv.hh"
 #include "aodv_routeupdatewatcher.hh"
@@ -65,7 +66,9 @@ class AODVNeighbours : public Element {
 
 		String printRT(String caption);
 
+		void cleanup(CleanupStage);
 		void invalidateRoute(const IPAddress &dst);
+		void run_timer(Timer*);
 	private:
 		IPAddress myIP;
 		uint32_t mySequenceNumber;
@@ -75,11 +78,13 @@ class AODVNeighbours : public Element {
 		// data necessary for the timer callback function
 		struct TimerData{
 			AODVNeighbours* neighbours;
-			IPAddress * ip;
+			IPAddress ip;
 		};
 		
-		static void handleExpiry(Timer*, void *); // calback function for timers
-		void expire(const IPAddress &, TimerData *);
+		typedef HashTable<Timer*, IPAddress> Timers;
+		Timers _timers;
+
+		//static void handleExpiry(Timer*, void *); // calback function for timers
 		
 		void editRoutetableEntry(NeighbourMap::Pair*, bool, uint32_t , uint32_t , const IPAddress & , int);
 		void insertRoutetableEntry(bool, uint32_t, uint32_t, const IPAddress &, int, const IPAddress &);

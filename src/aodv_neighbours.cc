@@ -35,31 +35,30 @@ void AODVNeighbours::setRouteUpdateWatcher(AODVRouteUpdateWatcher* w){
 	watcher = w;
 }
 
-void AODVNeighbours::handleExpiry(Timer*, void * data){
-	TimerData * timerdata = (TimerData*) data;
-	assert(timerdata);
-	timerdata->neighbours->expire(*timerdata->ip,timerdata);
-}
+void AODVNeighbours::run_timer(Timer* t ){
+	//TimerData * timerdata = (TimerData*) data;
+	if(_timers.find(t)!=_timers.end())
+	{
+		//expire(_timers[t]);
+		NeighbourMap::Pair* pair = neighbours.find_pair(_timers[t]);
+		assert(pair);
 
-void AODVNeighbours::expire(const IPAddress & ip, TimerData * timerdata){
-	// pass timerdata too to clean up memory after timer expires completely
-	NeighbourMap::Pair* pair = neighbours.find_pair(ip);
-	assert(pair);
-	click_chatter("[%s] %s via %s %d DSN=%d %s, valid, LT=%d",
-			pair->value.valid?"E":"D",
-			pair->key.s().c_str(),
-			IPAddress(pair->value.nexthop).s().c_str(), pair->value.hopcount,
-			pair->value.destinationSequenceNumber,
-			pair->value.validDestinationSequenceNumber?"valid":"not valid",
-			(pair->value.expiry->expiry()-Timestamp::now()).msec());
-	if(pair->value.valid){
-		pair->value.valid = false;
-		pair->value.expiry->schedule_after_msec(AODV_DELETE_PERIOD);
-	} else {
-		delete(pair->value.expiry);
-		neighbours.remove(ip);
-		delete timerdata->ip;
-		delete timerdata;
+		click_chatter("[%s] %s via %s %d DSN=%d %s, valid, LT=%d",
+				pair->value.valid?"I":"D",
+				pair->key.s().c_str(),
+				IPAddress(pair->value.nexthop).s().c_str(), pair->value.hopcount,
+				pair->value.destinationSequenceNumber,
+				pair->value.validDestinationSequenceNumber?"valid":"not valid",
+				(pair->value.expiry->expiry()-Timestamp::now()).msec());
+		if(pair->value.valid){
+			pair->value.valid = false;
+			pair->value.expiry->schedule_after_msec(AODV_DELETE_PERIOD);
+		} else {
+			//delete(pair->value.expiry);
+			neighbours.remove(_timers[t]);
+			_timers.erase(t);
+			delete t;
+		}
 	}
 }
 
@@ -94,10 +93,8 @@ void AODVNeighbours::insertRoutetableEntry(bool validDestinationSequenceNumber, 
 	data.valid = true;
 	data.hopcount = hopcount;
 
-	TimerData* timerdata = new TimerData();
-	timerdata->ip = new IPAddress(ip);
-	timerdata->neighbours = this;
-	data.expiry = new Timer(&AODVNeighbours::handleExpiry,timerdata);
+	data.expiry = new Timer(this);
+	_timers[data.expiry]=ip;
 	data.expiry->initialize(this);
 	data.expiry->schedule_after_msec(calculateLifetime(lifetime));
 	data.nexthop = nexthop;
@@ -201,6 +198,15 @@ void AODVNeighbours::invalidateRoute(const IPAddress & dst)
 			pair->value.valid = false;
 			pair->value.expiry->schedule_after_msec(AODV_DELETE_PERIOD);
 		}
+	}
+}
+
+void AODVNeighbours::cleanup(CleanupStage)
+{
+	click_chatter("AODVNeighbours::Cleanup");
+	for(Timers::iterator i = _timers.begin(); i!=_timers.end(); ++i)
+	{
+		delete i->first;
 	}
 }
 
