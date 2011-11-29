@@ -56,7 +56,7 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 			if (ipheader->ip_ttl == 1){ //HELLO
 				neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination),ntohl(rrep->destinationseqnr),rrep->hopcount, IPAddress(ipheader->ip_src),AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
 			} else { // RREP
-				StringAccum acc1;
+				/*StringAccum acc1;
 							acc1 << "in  RREP " << IPAddress(ipheader->ip_src)
 								<< " -> " << IPAddress(ipheader->ip_dst)
 								<< "; o:" << IPAddress(rrep->originator)
@@ -64,7 +64,7 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 								<< "; HC="<< (int)rrep->hopcount
 								<< "; LT="<< ntohl(rrep->lifetime)
 								<< "; DSN="<< ntohl(rrep->destinationseqnr);
-				click_chatter("%s",neighbour_table->printRT(acc1.take_string()).c_str());
+				click_chatter("%s",neighbour_table->printRT(acc1.take_string()).c_str());*/
 				// the information is only useful if I am not the destination (I might hear this packets due to routing changes)
 				if (rrep->destination != neighbour_table->getMyIP()){ 
 					neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination), ntohl(rrep->destinationseqnr), rrep->hopcount, IPAddress(ipheader->ip_src), ntohl(rrep->lifetime));
@@ -77,13 +77,13 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 		{
 			aodv_rreq_header * header = (aodv_rreq_header*) (packet->data() + aodv_headeroffset);
 			//click_chatter("AODV rreq packet received from %s with rreqid %u", IPAddress(header->originator).s().c_str(), ntohl(header->rreqid));
-			StringAccum acc;
+			/*StringAccum acc;
 			acc << "in  RREQ " << IPAddress(ipheader->ip_src)
 				<< " -> " << IPAddress(ipheader->ip_dst)
 				<< "; o:" << IPAddress(header->originator)<<"("<<ntohl(header->originatorseqnr)<<")"
 				<< " d:" << IPAddress(header->destination)<<"("<<ntohl(header->destinationseqnr)<<")"
 				<< "; HC="<< (int)header->hopcount;
-			click_chatter("%s",neighbour_table->printRT(acc.take_string()).c_str());
+			click_chatter("%s",neighbour_table->printRT(acc.take_string()).c_str());*/
 			// RFC 6.5: create or update route to previous hop ...
 			neighbour_table->updateRoutetableEntry(ipheader->ip_src,1, ipheader->ip_src);
 			

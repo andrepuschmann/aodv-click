@@ -64,7 +64,7 @@ class AODVNeighbours : public Element {
 		Vector<IPAddress>* getPrecursors(const IPAddress &) const;
 		Vector<IPAddress> getEntriesWithNexthop(const IPAddress &) const;
 
-		String printRT(String caption);
+		//String printRT(String caption);
 
 		void cleanup(CleanupStage);
 		void invalidateRoute(const IPAddress &dst);

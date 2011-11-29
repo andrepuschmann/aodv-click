@@ -61,11 +61,11 @@ void AODVKnownClassifier::push(int port, Packet * p)
 
 	const click_ip * ipheader = packet->ip_header();
 
-	click_chatter("in  RREQ %s -> %s; o: %s; d: %s HC=%d",
+	/*click_chatter("in  RREQ %s -> %s; o: %s; d: %s HC=%d",
 			IPAddress(ipheader->ip_src).s().c_str(),
 			IPAddress(ipheader->ip_dst).s().c_str(),
 			IPAddress(rreq->originator).s().c_str(),
-			IPAddress(rreq->destination).s().c_str(), rreq->hopcount);
+			IPAddress(rreq->destination).s().c_str(), rreq->hopcount);*/
 
 	uint32_t newlifetime = (2 * AODV_NET_TRAVERSAL_TIME)
 			- (2 * rreq->hopcount * AODV_NODE_TRAVERSAL_TIME);
@@ -96,9 +96,6 @@ void AODVKnownClassifier::push(int port, Packet * p)
 					(*storedSeqNr == ntohl(rreq->destinationseqnr)|| AODVNeighbours::largerSequenceNumber(*storedSeqNr, ntohl(rreq->destinationseqnr)))))
 	{
 		//click_chatter("destination found, replying");
-		/*****************
-		 * Не отвечать на запросы от тех, через кого сам водит пакеты !!!
-		 */
 		//if(next) neighbour_table->addPrecursor(*next,rreq->destination); // RFC 6.2
 		if (next)
 		{

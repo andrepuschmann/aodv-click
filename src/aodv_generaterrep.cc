@@ -89,12 +89,12 @@ void AODVGenerateRREP::push (int port, Packet * rreq){
 	IPAddress* nexthop = neighbour_table->nexthop(IPAddress(header->originator));
 	assert(nexthop);
 	setrrepheaders->addRREP(packet,nexthop);
-	click_chatter ("out  RREP %s -> %s; o: %s; d: %s HC=%d",
+	/*click_chatter ("out  RREP %s -> %s; o: %s; d: %s HC=%d",
 				IPAddress(ipheader->ip_src).s().c_str(),
 				IPAddress(ipheader->ip_dst).s().c_str(),
 				IPAddress(header->originator).s().c_str(),
 				IPAddress(header->destination).s().c_str(),
-				header->hopcount);
+				header->hopcount);*/
 	output(0).push(packet);
 	
 	//RFC 6.6.3 : Generating Gratuitous RREPs

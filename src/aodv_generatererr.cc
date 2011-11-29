@@ -35,7 +35,6 @@ AODVGenerateRERR::configure(Vector<String> &conf, ErrorHandler *errh)
 void AODVGenerateRERR::push (int port, Packet * packet){
 	assert(port >= 0 && port <= 1);
 	if(port == 0){
-		click_chatter("RERR 6.9 ii: port 0");
 		// 6.9 case ii: receives packets from lookuproute coming from neighbours without known route
 		const click_ip * ipheader = packet->ip_header();
 		assert(ipheader);
@@ -46,7 +45,6 @@ void AODVGenerateRERR::push (int port, Packet * packet){
 		generateRERR(false,ips,seqnrs);
 		
 	} else {
-		click_chatter("%s",neighbour_table->printRT("in  RERR 6.9 iii: port 1").c_str());
 		// 6.9 case iii: receives RERR from a neighbour for one or more active routes
 		aodv_rerr_header * rerr = (aodv_rerr_header*) (packet->data() + aodv_headeroffset);
 		assert(rerr->type == AODV_RERR_MESSAGE);
