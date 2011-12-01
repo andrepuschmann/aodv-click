@@ -64,7 +64,7 @@ void AODVWaitingForDiscovery::run_timer(Timer* t)
 
 			buffer.remove(_timers[t]);
 			_timers.erase(t);
-			delete t;
+			//delete t;
 
 		}
 		else
