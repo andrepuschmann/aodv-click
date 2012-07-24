@@ -31,6 +31,7 @@ class AODVKnownClassifier : public Element {
 		AODVKnownClassifier *clone() const	{ return new AODVKnownClassifier; }
 		
 		int configure(Vector<String> &, ErrorHandler *);
+		void cleanup(CleanupStage);
 		
 		virtual void push (int, Packet *);
 		
@@ -40,15 +41,7 @@ class AODVKnownClassifier : public Element {
 		PastRREQMap RREQBuffer;
 		
 		void addKnownRREQ(const String &);
-		
-		static void handleExpiry(Timer*, void *); // calback function for timers
-		void expire(const String &);
-		
-		// data necessary for the timer callback function
-		struct TimerData{
-			AODVKnownClassifier* known;
-			String key;
-		};
+		void run_timer(Timer *t);
 
 		const IPAddress * myIP;
 };

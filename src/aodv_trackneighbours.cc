@@ -115,7 +115,8 @@ void AODVTrackNeighbours::push(int port, Packet * packet)
 
 				// don't use RERR information, must be AODV type 2, ttl 1 and non-existing entry
 				if (rrep->type == 2 && ipheader->ip_ttl == 1
-						&& !neighbour_timers.find_pair(rrep->originator))
+						&& !neighbour_timers.find_pair(rrep->originator)
+						&& ipheader->ip_ttl == INADDR_BROADCAST)
 				{
 					TimerData* timerdata = new TimerData();
 					timerdata->ip = new IPAddress(rrep->originator);

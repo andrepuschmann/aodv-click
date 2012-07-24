@@ -53,7 +53,7 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 			// increment hopcount according to RFC 6.7
 			++rrep->hopcount;
 			
-			if (ipheader->ip_ttl == 1){ //HELLO
+			if (ipheader->ip_ttl == 1 && ipheader->ip_dst == INADDR_BROADCAST ){ //HELLO
 				neighbour_table->updateRoutetableEntry(IPAddress(rrep->destination),ntohl(rrep->destinationseqnr),rrep->hopcount, IPAddress(ipheader->ip_src),AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
 			} else { // RREP
 				/*StringAccum acc1;

@@ -25,7 +25,7 @@ String AODVPacketAnalyzer::getMessageString(Packet *packet){
 	if (packet->length() == aodv_headeroffset + sizeof(aodv_rrep_header)){ //RREP, HELLO or RERR
 		aodv_rrep_header * rrep = (aodv_rrep_header*) (packet->data() + aodv_headeroffset);
 		if (rrep->type == 2){
-			if (packet->ip_header()->ip_ttl == 1){
+			if (packet->ip_header()->ip_ttl == 1 &&  packet->ip_header()->ip_dst == INADDR_BROADCAST ){
 				return AODV_HELLO_STRING;
 			} else {
 				return AODV_RREP_STRING;

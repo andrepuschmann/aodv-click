@@ -134,29 +134,19 @@ void AODVKnownClassifier::push(int port, Packet * p)
 	}
 }
 
-void AODVKnownClassifier::handleExpiry(Timer*, void * data)
+void AODVKnownClassifier::cleanup(CleanupStage cleanupStage)
 {
-	TimerData * timerdata = (TimerData*) data;
-	assert(timerdata);
-	timerdata->known->expire(timerdata->key);
-	delete timerdata;
-}
-
-void AODVKnownClassifier::expire(const String & key)
-{
-	PastRREQMap::Pair* pair = RREQBuffer.find_pair(key);
-	assert(pair);
-	delete (pair->value);
-	RREQBuffer.remove(key);
+	for(PastRREQMap::iterator i=RREQBuffer.begin(); i!=RREQBuffer.end(); ++i)
+	{
+		//i.value()->unschedule();
+		i.value()->clear();
+		delete i.value();
+	}
 }
 
 void AODVKnownClassifier::addKnownRREQ(const String & key)
 {
-	TimerData* timerdata = new TimerData();
-	timerdata->known = this;
-	timerdata->key = key;
-
-	Timer * timer = new Timer(&AODVKnownClassifier::handleExpiry, timerdata);
+	Timer * timer = new Timer(this);
 	timer->initialize(this);
 	timer->schedule_after_msec(AODV_PATH_DISCOVERY_TIME);
 
@@ -171,6 +161,21 @@ void AODVKnownClassifier::addKnownRREQ(uint32_t id, const IPAddress & ip)
 
 	addKnownRREQ(key);
 }
+
+void AODVKnownClassifier::run_timer(Timer *t)
+{
+	for(PastRREQMap::iterator i = RREQBuffer.begin(); i!=RREQBuffer.end(); ++i)
+	{
+		if(i.value() == t)
+		{
+			RREQBuffer.remove(i.key());
+			delete t;
+			break;
+		}
+	}
+}
+
+
 
 // macro magic to use bighashmap
 #include <click/bighashmap.cc>

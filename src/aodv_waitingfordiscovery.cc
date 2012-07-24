@@ -236,6 +236,10 @@ void AODVWaitingForDiscovery::cleanup(CleanupStage cleanupStage)
 	{
 		delete i->first;
 	}
+	for(Buffer::iterator i = buffer.begin(); i!=buffer.end();++i)
+	{
+		delete i.value();
+	}
 }
 
 
