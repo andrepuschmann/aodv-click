@@ -1,16 +1,11 @@
-A SAMPLE PACKAGE
+AODV CLICK PACKAGE
 ================
 
-    Click supports dynamically linked 'packages' containing extra elements.
-The two drivers -- specifically, the 'click' user-level driver and the
-'click-install' program for the Linux kernel driver -- automatically link
-with whatever packages are mentioned in a configuration's 'require'
-statements. If you are building a collection of your own elements, it may
-make sense to compile that collection as a package. Then you can keep your
-Click sources separate from your package sources.
-
-    This directory demonstrates how to write a simple package. You can copy
-most of the files into your own package with minimal changes.
+    The package provides the AODV related elements for Click modular router. 
+The implementation is base on the implementation of Bart Braem available here:
+http://www.pats.ua.ac.be/software/aodv/
+This package contains some bug and memory leaks fixes. Additionally, the elements
+here are organized as a separate package.
 
 
 INSTALLATION
