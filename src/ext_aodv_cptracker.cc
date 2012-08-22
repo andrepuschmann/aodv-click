@@ -70,7 +70,7 @@ Packet* CPTracker::processFromHost(Packet *p)
 					_data[dst_ip]=cp;
 				}
 
-				click_chatter("[%d] (status %d)to %s\n", _data[dst_ip].ts.timeval().tv_sec,_data[dst_ip].status, dst_ip.s().c_str());
+				//click_chatter("[%d] (status %d)to %s\n", _data[dst_ip].ts.timeval().tv_sec,_data[dst_ip].status, dst_ip.s().c_str());
 			}
 			return p;
 		}
@@ -117,7 +117,7 @@ IPAddress			src_ip(iph->ip_src);
 						cp.status = ST_TO_HOST;
 					}
 					_data[src_ip]=cp;
-					click_chatter("[%d] (state %d) from %s\n", cp.ts.timeval().tv_sec,cp.status ,src_ip.s().c_str());
+					//click_chatter("[%d] (state %d) from %s\n", cp.ts.timeval().tv_sec,cp.status ,src_ip.s().c_str());
 				}
 			}
 			return p;
