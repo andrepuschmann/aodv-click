@@ -24,9 +24,8 @@ AODVTrackNeighbours::~AODVTrackNeighbours()
 
 int AODVTrackNeighbours::configure(Vector<String> &conf, ErrorHandler *errh)
 {
-	int res = cp_va_kparse(conf, this, errh, "GENERATERERR", cpkP + cpkM,
-			cpElementCast, "AODVGenerateRERR", &generateRerr, "NEIGHBOURS",
-			cpkP + cpkM, cpElementCast, "AODVNeighbours", &neighbour_table,
+	int res = cp_va_kparse(conf, this, errh, "GENERATERERR", cpkP + cpkM, cpElementCast, "AODVGenerateRERR",
+			&generateRerr, "NEIGHBOURS", cpkP + cpkM, cpElementCast, "AODVNeighbours", &neighbour_table,
 			cpEnd);
 	if (res < 0)
 		return res;
@@ -60,16 +59,15 @@ void AODVTrackNeighbours::expire(IPAddress* ip)
 		Vector<uint32_t> seqNrs;
 		Vector<IPAddress> ips;
 		uint32_t* seqNr = neighbour_table->getSequenceNumber(*ip);
-		if(seqNr)
+		if (seqNr)
 		{
 			seqNrs.push_back(*seqNr);
 			delete seqNr;
 		}
 		ips.push_back(*ip); // add expired IP too, that's the main source for the RERR
 
-		for (Vector<IPAddress>::iterator iter = precursors->begin();
-				iter != precursors->end(); ++iter)
-				{
+		for (Vector<IPAddress>::iterator iter = precursors->begin(); iter != precursors->end(); ++iter)
+		{
 			// it's possible to be your own precursor in case of HELLOs, for clean RERRs let's filter out those
 			if (*iter != *ip)
 			{
@@ -93,48 +91,37 @@ void AODVTrackNeighbours::push(int port, Packet * packet)
 	assert(packet);
 	const click_ip * ipheader = packet->ip_header();
 	assert(ipheader);
-	/*Ignore broadcast ip packets*/
-	if (ipheader->ip_dst == 0xffffffff)
-	{
-		output(0).push(packet);
-		return;
-	}
-	if (ipheader->ip_src != *myIP)
-	{
-		if (ipheader->ip_p == 17)
-		{//UDP
-			struct click_udp *udphdr = (struct click_udp*)(packet->data() + sizeof(struct click_ether)+ipheader->ip_hl*4);
-			if(ntohs(udphdr->uh_dport) == 654)//AODV
-			{
-			if (packet->length()== aodv_headeroffset + sizeof(aodv_rrep_header))
+
+	if (ipheader->ip_src != *myIP && ipheader->ip_p == 17)
+	{ //UDP
+		struct click_udp *udphdr = (struct click_udp*) (packet->data() + sizeof(struct click_ether)
+				+ ipheader->ip_hl * 4);
+		if (ntohs(udphdr->uh_dport) == 654) //AODV
+		{
+			if (packet->length() == aodv_headeroffset + sizeof(aodv_rrep_header))
 			{ //RREP or HELLO - wait with cast of data until now because expensive
 
-				const aodv_rrep_header * rrep =
-						(const aodv_rrep_header*) (packet->data()
-								+ aodv_headeroffset);
+				const aodv_rrep_header * rrep = (const aodv_rrep_header*) (packet->data() + aodv_headeroffset);
 
 				// don't use RERR information, must be AODV type 2, ttl 1 and non-existing entry
 				if (rrep->type == 2 && ipheader->ip_ttl == 1
-						&& !neighbour_timers.find_pair(rrep->originator)
-						&& ipheader->ip_ttl == INADDR_BROADCAST)
-				{
-					TimerData* timerdata = new TimerData();
-					timerdata->ip = new IPAddress(rrep->originator);
-					timerdata->me = this;
-					Timer * timer = new Timer(
-							&AODVTrackNeighbours::handleExpiry, timerdata);
-					timer->initialize(this);
-					timer->schedule_after_msec(
-							AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
-					neighbour_timers.insert(rrep->originator, timer);
-				}
+						&& !neighbour_timers.find_pair(rrep->originator) && ipheader->ip_ttl == INADDR_BROADCAST){
+				TimerData* timerdata = new TimerData();
+				timerdata->ip = new IPAddress(rrep->originator);
+				timerdata->me = this;
+				Timer * timer = new Timer(
+						&AODVTrackNeighbours::handleExpiry, timerdata);
+				timer->initialize(this);
+				timer->schedule_after_msec(
+						AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
+				neighbour_timers.insert(rrep->originator, timer);
 			}
 		}
-		}
+
+	}
 		TimerMap::Pair* pair = neighbour_timers.find_pair(ipheader->ip_src);
 		if (pair)
-			pair->value->schedule_after_msec(
-					AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
+			pair->value->schedule_after_msec(AODV_ALLOWED_HELLO_LOSS * AODV_HELLO_INTERVAL);
 	}
 	output(0).push(packet);
 }

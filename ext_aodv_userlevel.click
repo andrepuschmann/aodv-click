@@ -9,7 +9,7 @@ require(library local.click);
 elementclass OutputEth0{
 	input[0]
 		-> Queue(2000)
-		-> ToDevice(eth1);
+		-> ToDevice(eth0);
 }
 
 /**
@@ -18,7 +18,7 @@ elementclass OutputEth0{
 */
 elementclass InputEth0{
 	$myaddr_ethernet |
-	FromDevice(eth1)
+	FromDevice(eth0)
 		-> HostEtherFilter($myaddr_ethernet, DROP_OWN false, DROP_OTHER true)
 		-> output;
 }
@@ -40,7 +40,7 @@ elementclass System{
 		-> CheckIPHeader
 		-> MarkIPHeader
         -> [1]tracker :: EAODVCPTracker;
-		-> [0]output;
+		
     tracker[1] -> [0]output;
 		
 	input[0]
@@ -292,7 +292,7 @@ routediscovery[0]
 	-> StripToNetworkHeader
 	-> [0]arpquerier;
 routediscovery[1]
-    -> eProblemDetector::EAODVProblemDetector(99000,3)
+    -> eProblemDetector::EAODVProblemDetector(29000,3)
 	-> ICMPError(fake,3,1)
 	-> system;
 eProblemDetector[1] 
