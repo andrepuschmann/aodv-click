@@ -271,7 +271,6 @@ routediscovery[0]
 	-> [0]arpquerier;
 routediscovery[1]
     -> eProblemDetector::EAODVProblemDetector(29000,3)
-    -> Print
 	-> ICMPError(fake,3,1)
 	-> system;
 eProblemDetector[1] 
