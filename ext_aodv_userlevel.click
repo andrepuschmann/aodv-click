@@ -39,7 +39,7 @@ elementclass System{
 		-> Strip(14)
 		-> CheckIPHeader
 		-> MarkIPHeader
-        -> [1]tracker :: CPTracker;
+        -> [1]tracker :: EAODVCPTracker;
 		-> [0]output;
     tracker[1] -> [0]output;
 		
@@ -292,7 +292,7 @@ routediscovery[0]
 	-> StripToNetworkHeader
 	-> [0]arpquerier;
 routediscovery[1]
-    -> eProblemDetector::EADOVProblemDetector(99000,3)
+    -> eProblemDetector::EAODVProblemDetector(99000,3)
 	-> ICMPError(fake,3,1)
 	-> system;
 eProblemDetector[1] 
