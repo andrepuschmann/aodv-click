@@ -3,14 +3,17 @@
 #include <click/element.hh>
 #include <click/string.hh>
 #include <click/timer.hh>
+#include <click/hashtable.hh>
 CLICK_DECLS
 class CPTracker;
 
 class ProblemDetector : public Element
 {
+protected:
+	typedef HashTable<Timer*, IPAddress> Timers;
 public:
-        ProblemDetector();
-        ~ProblemDetector();
+    ProblemDetector();
+    ~ProblemDetector();
     const char *class_name() const {return "EAODVProblemDetector";}
     const char *port_count() const {return "1/2";}
     const char *processing() const {return PUSH;}
@@ -23,7 +26,7 @@ protected:
     int _counter;
     String _prefix;
     CPTracker *_partners;
-    Timer _timer;
+    Timers _timers;
     uint16_t _srv_port;
     uint32_t _timeout;
 };

@@ -20,12 +20,16 @@
 using namespace std;
 CLICK_DECLS
 ProblemDetector::ProblemDetector() :
-		_counter(0), _timer(this), _srv_port(19000), _timeout(2)
+		_counter(0), _srv_port(19000), _timeout(2)
 {
 
 }
 ProblemDetector::~ProblemDetector()
 {
+	for(Timers::iterator t = _timers.begin(); t!=_timers.end(); ++t)
+	{
+		delete t->first;
+	}
 
 }
 int ProblemDetector::configure(Vector<String> &conf, ErrorHandler *errh)
@@ -66,7 +70,6 @@ int ProblemDetector::initialize(ErrorHandler *errh)
 		errh->message("The ProblemDetector element needs, the elements CPTracker is initialized.");
 		return -1;
 	}
-	_timer.initialize(this);
 	return 0;
 }
 
@@ -88,7 +91,12 @@ void ProblemDetector::push(int, Packet *p)
 					{
 						_partners->updateStatus(dst_ip, CPTracker::ST_WAITING_FOR_RECOVERY);
 
-						_timer.schedule_after_sec(_timeout);
+						//_timer.schedule_after_sec(_timeout);
+						Timer *t = new Timer(this);
+						t->initialize(this);
+						t->schedule_after_sec(_timeout);
+
+						_timers[t] = dst_ip;
 
 						click_chatter("[%d] Problem detected %s <-> %s", Timestamp::now().timeval().tv_sec,
 								src_ip.s().c_str()/*/iph->ip_src*/, dst_ip.s().c_str()/*/iph->ip_dst*/);
@@ -116,11 +124,20 @@ void ProblemDetector::sendNotification()
 
 void ProblemDetector::run_timer(Timer *t)
 {
-	if(cp.status == CPTracker::ST_WAITING_FOR_RECOVERY)
+	if(_timers.find(t)!=_timers.end())
 	{
-		sendNotification();
-	}
+		CPTracker::CommPartner cp;
+		if(_partners->getCommPartner(_timers[t], cp))
+		{
+			if(cp.status == CPTracker::ST_WAITING_FOR_RECOVERY)
+			{
+				sendNotification();
+			}
+		}
 
+		_timers.erase(t);
+		delete t;
+	}
 }
 
 CLICK_ENDDECLS
