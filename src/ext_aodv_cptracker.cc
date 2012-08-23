@@ -212,7 +212,7 @@ String EAODVCPTracker::readTable()
 }
 
 void EAODVCPTracker::updateStatus(const IPAddress & addr,
-		enum CPTracker::CP_STATUS stat)
+		enum EAODVCPTracker::CP_STATUS stat)
 {
 	if (_data.find(addr) != _data.end())
 	{
@@ -223,7 +223,7 @@ void EAODVCPTracker::updateStatus(const IPAddress & addr,
 
 String EAODVCPTracker::readHandle(Element* e, void *)
 {
-	CPTracker *me = dynamic_cast<CPTracker*>(e);
+	EAODVCPTracker *me = dynamic_cast<EAODVCPTracker*>(e);
 	return me->readTable();
 }
 CLICK_ENDDECLS
