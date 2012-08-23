@@ -21,7 +21,7 @@
 #include <click/ipaddress.hh>
 #include <click/timer.hh>
 CLICK_DECLS
-class CPTracker : public Element
+class EAODVCPTracker : public Element
 {
 public:
 	enum CP_STATUS
@@ -45,8 +45,8 @@ private:
 	Timer timer;
 
 public:
-        CPTracker();
-        ~CPTracker();
+	EAODVCPTracker();
+    ~EAODVCPTracker();
     const char *class_name() const {return "EAODVCPTracker";}
     const char *port_count() const {return "2/2";}
     const char *processing() const {return PUSH;}

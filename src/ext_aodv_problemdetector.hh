@@ -7,13 +7,13 @@
 CLICK_DECLS
 class CPTracker;
 
-class ProblemDetector : public Element
+class EAODVProblemDetector : public Element
 {
 protected:
 	typedef HashTable<Timer*, IPAddress> Timers;
 public:
-    ProblemDetector();
-    ~ProblemDetector();
+	EAODVProblemDetector();
+    ~EAODVProblemDetector();
     const char *class_name() const {return "EAODVProblemDetector";}
     const char *port_count() const {return "1/2";}
     const char *processing() const {return PUSH;}

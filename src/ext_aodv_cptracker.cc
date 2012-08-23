@@ -9,21 +9,21 @@
 #include <string.h>
 
 CLICK_DECLS
-CPTracker::CPTracker() :
+EAODVCPTracker::EAODVCPTracker() :
 		timer(this)
 {
 
 }
-CPTracker::~CPTracker()
+EAODVCPTracker::~EAODVCPTracker()
 {
 
 }
-int CPTracker::configure(Vector<String> &/*conf*/, ErrorHandler */*errh*/)
+int EAODVCPTracker::configure(Vector<String> &/*conf*/, ErrorHandler */*errh*/)
 {
 
 	return 0;
 }
-void CPTracker::push(int gate, Packet *p)
+void EAODVCPTracker::push(int gate, Packet *p)
 {
 	if (p)
 	{
@@ -44,7 +44,7 @@ void CPTracker::push(int gate, Packet *p)
 	}
 }
 
-Packet* CPTracker::processFromHost(Packet *p)
+Packet* EAODVCPTracker::processFromHost(Packet *p)
 {
 	struct click_ip const *iph =
 			reinterpret_cast<const struct click_ip *>(p->data());IPAddress dst_ip(iph->ip_dst);
@@ -74,7 +74,7 @@ Packet* CPTracker::processFromHost(Packet *p)
 			}
 			return p;
 		}
-Packet* CPTracker::processToHost(Packet *p)
+Packet* EAODVCPTracker::processToHost(Packet *p)
 {
 	struct click_ip const *iph =
 			reinterpret_cast<const struct click_ip *>(p->data());
@@ -123,13 +123,13 @@ IPAddress			src_ip(iph->ip_src);
 			return p;
 		}
 
-int CPTracker::initialize(ErrorHandler*)
+int EAODVCPTracker::initialize(ErrorHandler*)
 {
 	timer.initialize(this);
 	timer.schedule_after_sec(2 * 60);
 	return 0;
 }
-void CPTracker::run_timer(Timer* t)
+void EAODVCPTracker::run_timer(Timer* t)
 {
 	if (t == &timer)
 	{
@@ -139,7 +139,7 @@ void CPTracker::run_timer(Timer* t)
 	}
 }
 
-bool CPTracker::getCommPartner(const IPAddress &addr, CommPartner & cp)
+bool EAODVCPTracker::getCommPartner(const IPAddress &addr, CommPartner & cp)
 {
 	if (_data.find(addr) != _data.end())
 	{
@@ -152,7 +152,7 @@ bool CPTracker::getCommPartner(const IPAddress &addr, CommPartner & cp)
 	}
 }
 
-void CPTracker::cleanTable()
+void EAODVCPTracker::cleanTable()
 {
 	CPTable::iterator i = _data.begin();
 	Timestamp ts(Timestamp::now().timeval().tv_sec - 2 * 60);
@@ -170,11 +170,11 @@ void CPTracker::cleanTable()
 	}
 	click_chatter("CPTracer: table was cleaned\n");
 }
-void CPTracker::add_handlers()
+void EAODVCPTracker::add_handlers()
 {
 	add_read_handler("table", &readHandle, (const void*) NULL);
 }
-String CPTracker::readTable()
+String EAODVCPTracker::readTable()
 {
 	StringAccum acc;
 	if (_data.empty())
@@ -211,7 +211,7 @@ String CPTracker::readTable()
 	return acc.take_string();
 }
 
-void CPTracker::updateStatus(const IPAddress & addr,
+void EAODVCPTracker::updateStatus(const IPAddress & addr,
 		enum CPTracker::CP_STATUS stat)
 {
 	if (_data.find(addr) != _data.end())
@@ -221,7 +221,7 @@ void CPTracker::updateStatus(const IPAddress & addr,
 
 }
 
-String CPTracker::readHandle(Element* e, void *)
+String EAODVCPTracker::readHandle(Element* e, void *)
 {
 	CPTracker *me = dynamic_cast<CPTracker*>(e);
 	return me->readTable();

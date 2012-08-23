@@ -19,12 +19,12 @@
 
 using namespace std;
 CLICK_DECLS
-ProblemDetector::ProblemDetector() :
+EAODVProblemDetector::EAODVProblemDetector() :
 		_counter(0), _srv_port(19000), _timeout(2)
 {
 
 }
-ProblemDetector::~ProblemDetector()
+EAODVProblemDetector::~EAODVProblemDetector()
 {
 	for(Timers::iterator t = _timers.begin(); t!=_timers.end(); ++t)
 	{
@@ -32,7 +32,7 @@ ProblemDetector::~ProblemDetector()
 	}
 
 }
-int ProblemDetector::configure(Vector<String> &conf, ErrorHandler *errh)
+int EAODVProblemDetector::configure(Vector<String> &conf, ErrorHandler *errh)
 {
 	Args a(conf, this, errh);
 	uint32_t timeout;
@@ -48,7 +48,7 @@ int ProblemDetector::configure(Vector<String> &conf, ErrorHandler *errh)
 	click_chatter("Server port: %d\n", _srv_port);
 	return 0;
 }
-int ProblemDetector::initialize(ErrorHandler *errh)
+int EAODVProblemDetector::initialize(ErrorHandler *errh)
 {
 	Router *r = router();
 	typedef Vector<Element*> Elements;
@@ -73,7 +73,7 @@ int ProblemDetector::initialize(ErrorHandler *errh)
 	return 0;
 }
 
-void ProblemDetector::push(int, Packet *p)
+void EAODVProblemDetector::push(int, Packet *p)
 {
 	if (p)
 	{
@@ -109,7 +109,7 @@ void ProblemDetector::push(int, Packet *p)
 	}
 }
 
-void ProblemDetector::sendNotification()
+void EAODVProblemDetector::sendNotification()
 {
 	WritablePacket *pkt = Packet::make(sizeof(struct click_udp));
 	struct click_udp *udphdr = (struct click_udp*)(pkt->data());
@@ -122,7 +122,7 @@ void ProblemDetector::sendNotification()
 
 }
 
-void ProblemDetector::run_timer(Timer *t)
+void EAODVProblemDetector::run_timer(Timer *t)
 {
 	if(_timers.find(t)!=_timers.end())
 	{
@@ -141,5 +141,5 @@ void ProblemDetector::run_timer(Timer *t)
 }
 
 CLICK_ENDDECLS
-EXPORT_ELEMENT(ProblemDetector)
+EXPORT_ELEMENT(EAODVProblemDetector)
 
