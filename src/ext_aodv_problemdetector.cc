@@ -61,13 +61,13 @@ int EAODVProblemDetector::initialize(ErrorHandler *errh)
 		//click_chatter("Found %s\n", (*i)->class_name());
 		if (!_partners)
 		{
-			_partners = dynamic_cast<CPTracker*>(*i);
+			_partners = dynamic_cast<EAODVCPTracker*>(*i);
 		}
 
 	}
 	if (!_partners)
 	{
-		errh->message("The ProblemDetector element needs, the elements CPTracker is initialized.");
+		errh->message("The ProblemDetector element needs, the elements EAODVCPTracker is initialized.");
 		return -1;
 	}
 	return 0;
@@ -84,12 +84,12 @@ void EAODVProblemDetector::push(int, Packet *p)
 			IPAddress src_ip = iph->ip_src;
 			if (!dst_ip.is_multicast())
 			{
-				CPTracker::CommPartner cp;
+				EAODVCPTracker::CommPartner cp;
 				if (_partners->getCommPartner(dst_ip, cp))
 				{
-					if (cp.status == CPTracker::ST_BIDIRECT)
+					if (cp.status == EAODVCPTracker::ST_BIDIRECT)
 					{
-						_partners->updateStatus(dst_ip, CPTracker::ST_WAITING_FOR_RECOVERY);
+						_partners->updateStatus(dst_ip, EAODVCPTracker::ST_WAITING_FOR_RECOVERY);
 
 						//_timer.schedule_after_sec(_timeout);
 						Timer *t = new Timer(this);
@@ -126,10 +126,10 @@ void EAODVProblemDetector::run_timer(Timer *t)
 {
 	if(_timers.find(t)!=_timers.end())
 	{
-		CPTracker::CommPartner cp;
+		EAODVCPTracker::CommPartner cp;
 		if(_partners->getCommPartner(_timers[t], cp))
 		{
-			if(cp.status == CPTracker::ST_WAITING_FOR_RECOVERY)
+			if(cp.status == EAODVCPTracker::ST_WAITING_FOR_RECOVERY)
 			{
 				sendNotification();
 			}

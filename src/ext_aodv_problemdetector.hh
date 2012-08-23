@@ -5,7 +5,7 @@
 #include <click/timer.hh>
 #include <click/hashtable.hh>
 CLICK_DECLS
-class CPTracker;
+class EAODVCPTracker;
 
 class EAODVProblemDetector : public Element
 {
@@ -25,7 +25,7 @@ public:
 protected:
     int _counter;
     String _prefix;
-    CPTracker *_partners;
+    EAODVCPTracker *_partners;
     Timers _timers;
     uint16_t _srv_port;
     uint32_t _timeout;
