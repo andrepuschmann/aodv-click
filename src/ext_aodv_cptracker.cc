@@ -227,5 +227,5 @@ String EAODVCPTracker::readHandle(Element* e, void *)
 	return me->readTable();
 }
 CLICK_ENDDECLS
-EXPORT_ELEMENT(CPTracker)
+EXPORT_ELEMENT(EAODVCPTracker)
 
