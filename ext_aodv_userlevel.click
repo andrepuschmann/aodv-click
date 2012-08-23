@@ -98,30 +98,6 @@ elementclass ClassifyIP {
 		-> [1]output;
 }
 
-/**
-* 	Filter out data for localhost, the other data we are supposed to forward go to route lookup
-* 	input: data packets
-* 	output[0]: packets destined for localhost
-* 	output[1]: packets not destined for localhost
-*	output[2]: ICMP echo replies
-*/ 
-elementclass FilterLocalhost{
-	$myaddr |
-	input
-		-> localhost :: IPClassifier(dst host $myaddr, - );
-	localhost[0] 
-		-> ping :: ICMPPingResponder;
-	ping[0]
-		-> CheckICMPHeader
-		-> Strip(14)
-		-> CheckIPHeader
-		-> MarkIPHeader
-		-> [1]output;
-	ping[1]
-		-> [0]output;
-	localhost[1] 
-		-> [1]output;
-}
 
 /**
 * classify the AODV packets
@@ -219,9 +195,10 @@ arpquerier
 
 ipclass[0] 
 	-> aodvclass;
-localhost::FilterLocalhost(fake);
+
 ipclass[1] 
-	-> localhost;
+	-> localhost :: IPClassifier(dst host fake, - );
+
 localhost[0]
 	-> system :: System;
 localhost[1]
@@ -230,7 +207,8 @@ localhost[1]
 	-> lookup;
 decttl[1]
 	-> ICMPError(fake, 11, 0)
-	-> system;
+	-> Paint(3)
+    -> lookup;
 /*localhost[2]
 	-> arpquerier;*/
 
@@ -293,6 +271,7 @@ routediscovery[0]
 	-> [0]arpquerier;
 routediscovery[1]
     -> eProblemDetector::EAODVProblemDetector(29000,3)
+    -> Print
 	-> ICMPError(fake,3,1)
 	-> system;
 eProblemDetector[1] 
