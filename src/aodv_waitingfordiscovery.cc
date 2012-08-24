@@ -210,7 +210,6 @@ void AODVWaitingForDiscovery::push(int port, Packet * packet)
 			neighbour_table->addLifeTime(packet->dst_ip_anno(),
 					2 * AODV_NET_TRAVERSAL_TIME); //rfc 6.4 p 15
 
-			click_chatter("Init RREQ timer");
 			//click_chatter("RREQ generated and waiting in %s",neighbour_table->getMyIP().s().c_str());
 		}
 	}
