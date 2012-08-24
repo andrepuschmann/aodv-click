@@ -9,7 +9,7 @@ require(library local.click);
 elementclass OutputEth0{
 	input[0]
 		-> Queue(2000)
-		-> ToDevice(eth0);
+		-> ToDevice(wlan0);
 }
 
 /**
@@ -18,7 +18,7 @@ elementclass OutputEth0{
 */
 elementclass InputEth0{
 	$myaddr_ethernet |
-	FromDevice(eth0)
+	FromDevice(wlan0)
 		-> HostEtherFilter($myaddr_ethernet, DROP_OWN false, DROP_OTHER true)
 		-> output;
 }
