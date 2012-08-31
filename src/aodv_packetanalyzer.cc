@@ -82,4 +82,5 @@ String AODVPacketAnalyzer::getMessageString(Packet *packet)
 		// unknown type
 	}
 
-CLICK_ENDDECLS ELEMENT_PROVIDES(AODVPacketAnalyzer)
+CLICK_ENDDECLS
+ELEMENT_PROVIDES(AODVPacketAnalyzer)
