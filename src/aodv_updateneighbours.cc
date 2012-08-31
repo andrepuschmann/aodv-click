@@ -44,7 +44,7 @@ void AODVUpdateNeighbours::push (int port, Packet * packet){
 			{
 			WritablePacket * writable = packet->uniqueify();
 			aodv_rrep_header * rrep = (aodv_rrep_header*) (writable->data() + aodv_headeroffset);
-		
+
 			// RERRs aren't allowed here
 			assert(rrep->type == 2);
 			
