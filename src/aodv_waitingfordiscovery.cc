@@ -111,7 +111,7 @@ void AODVWaitingForDiscovery::newKnownDestination(const IPAddress & destination,
 			{ // forwarding of RREP
 				const click_ip * ipheader = (*iter)->ip_header();
 				assert(ipheader);
-				aodv_rrep_header * rrep = (aodv_rrep_header*) ((*iter)->data() + ipheader->ip_hl*4 + sizeof(struct click_udp));
+				aodv_rrep_header * rrep = (aodv_rrep_header*) ((char*)ipheader + ipheader->ip_hl*4 + sizeof(struct click_udp));
 
 				// RFC 6.7 last paragraph: 
 				// destination contains next hop (towards destination)
