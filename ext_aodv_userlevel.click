@@ -40,11 +40,10 @@ elementclass System{
 		-> CheckIPHeader
 		-> MarkIPHeader
         -> [1]tracker :: EAODVCPTracker;
-		
-    tracker[1] -> [0]output;
+    tracker[1] -> 
+		-> [0]output;
 		
 	input[0]
-		-> Strip(14)
         -> tracker
 		-> EtherEncap(0x0800, 1:1:1:1:1:1, fake) // ensure ethernet for kernel
 		-> CheckIPHeader(14)
@@ -97,7 +96,6 @@ elementclass ClassifyIP {
 	aodvpackets[1]
 		-> [1]output;
 }
-
 
 /**
 * classify the AODV packets
@@ -195,10 +193,10 @@ arpquerier
 
 ipclass[0] 
 	-> aodvclass;
-
 ipclass[1] 
-	-> localhost :: IPClassifier(dst host fake, - );
-
+    -> StripToNetworkHeader
+    -> MarkIPHeader
+	-> localhost::IPClassifier(dst host fake, - );
 localhost[0]
 	-> system :: System;
 localhost[1]
@@ -244,12 +242,15 @@ routereply
 destinationclassifier[0]
 	-> [1]routediscovery;
 destinationclassifier[1]
+    -> StripToNetworkHeader
+    -> MarkIPHeader
     -> DecIPTTL
 	-> SetIPChecksum  // ip_src and ip_dst are changed
-	-> StripToNetworkHeader
 	-> Paint(2) // distinguish RREPs for precursors
 	-> [0]arpquerier;
 destinationclassifier[2] // no nexthop -> discovery
+    -> StripToNetworkHeader
+    -> MarkIPHeader
     -> DecIPTTL
 	-> Paint(2) // distinguish RREPs for precursors
 	-> [0]routediscovery;
@@ -281,3 +282,4 @@ eProblemDetector[1]
     -> SetUDPChecksum
     -> SetIPAddress(server)
     -> arpquerier;
+
