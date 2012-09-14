@@ -1,6 +1,6 @@
 
 /** AODV Core Module **/
-
+require(package "AODV")
 
 elementclass AODV_Core {
 	$fake | 
