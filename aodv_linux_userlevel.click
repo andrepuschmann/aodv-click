@@ -8,13 +8,13 @@ require(library aodv_core.click);
 
 
 
-elementclass ToDevice{
+elementclass ToNetwork{
 	input[0]
 		-> Queue(2000)
 		-> ToDevice(wlan0);
 }
 
-elementclass FromDevice{
+elementclass FromNetwork{
 	$myaddr_ethernet |
 	FromDevice(wlan0)
 		-> HostEtherFilter($myaddr_ethernet, DROP_OWN false, DROP_OTHER true)
@@ -26,7 +26,7 @@ fromhost::FromHost(fake0, fake, ETHER fake);
 
 
 
-FromDevice(fake) -> aodv_core::AODV_Core(fake) -> output::ToDevice;
+FromNetwork(fake) -> aodv_core::AODV_Core(fake) -> output::ToNetwork;
 
 fromhost
 	-> fromhost_cl :: Classifier(12/0806, 12/0800);

@@ -13,13 +13,13 @@ rt :: StaticIPLookup(0.0.0.0/0 0);
 Idle() -> rt -> Discard;
 
 
-elementclass ToDevice{
+elementclass ToNetwork{
 	input[0]
 		-> Queue(64)
 		-> ToSimDevice(eth0);
 }
 
-elementclass FromDevice{
+elementclass FromNetwork{
 	$myaddr_ethernet |
 	FromSimDevice(eth0)
 		-> HostEtherFilter($myaddr_ethernet, DROP_OWN true, DROP_OTHER false)
@@ -31,7 +31,7 @@ fromhost :: FromSimDevice(tap0);
 
 
 
-FromDevice(fake) -> aodv_core::AODV_Core(fake) -> output::ToDevice;
+FromNetwork(fake) -> aodv_core::AODV_Core(fake) -> output::ToNetwork;
 fromhost -> [1]aodv_core;
 aodv_core[1] -> tohost;
 
