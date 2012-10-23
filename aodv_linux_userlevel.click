@@ -11,12 +11,12 @@ require(library aodv_core.click);
 elementclass ToNetwork{
 	input[0]
 		-> Queue(2000)
-		-> ToDevice(wlan0);
+		-> ToDevice(tap0);
 }
 
 elementclass FromNetwork{
 	$myaddr_ethernet |
-	FromDevice(wlan0)
+	FromDevice(tap0)
 		-> HostEtherFilter($myaddr_ethernet, DROP_OWN false, DROP_OTHER true)
 		-> output;
 }
