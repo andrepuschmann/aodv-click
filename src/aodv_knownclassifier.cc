@@ -70,9 +70,12 @@ void AODVKnownClassifier::push(int port, Packet * p)
 	uint32_t newlifetime = (2 * AODV_NET_TRAVERSAL_TIME)
 			- (2 * rreq->hopcount * AODV_NODE_TRAVERSAL_TIME);
 
-	neighbour_table->updateRoutetableEntry(rreq->originator,
+	if (rreq->originator != *myIP)
+	{
+		neighbour_table->updateRoutetableEntry(rreq->originator,
 			ntohl(rreq->originatorseqnr), rreq->hopcount, ipheader->ip_src,
 			newlifetime);
+	}
 
 	// RFC 6.5: "Whenever a RREQ message is received, ..." be certain, do update again
 	neighbour_table->addLifeTime(rreq->originator, newlifetime);
